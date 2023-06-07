@@ -1,0 +1,12 @@
+{
+  "name": "Custom Import App (without template)",
+  "description": "Demonstrates how to make custom import supervisely app that imports data from folder",
+  "type": "app",
+  "version": "2.0.0",
+  "categories": ["import", "images"],
+  "docker_image": "supervisely/base-py-sdk:6.72.23",
+  "icon": "https://user-images.githubusercontent.com/48913536/206150954-aea5867a-812b-4e89-8c1b-b2bed3c585f2.png",
+  "poster": "https://user-images.githubusercontent.com/48913536/207625766-e6f4314a-3b05-427f-9777-539e772c33fa.png",
+  "entrypoint": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
+  "port": 8000
+}
