@@ -173,13 +173,17 @@ else:
             )
 
             output_progress.hide()
+
+            # update project info for thumbnail preview
+            project = api.project.get_info_by_id(project.id)
+
             output_project_thumbnail.set(info=project)
             output_project_thumbnail.show()
             output_text.set(text="Import is finished", status="success")
             output_text.show()
             start_import_btn.disable()
-
             sly.logger.info(f"Result project: id={project.id}, name={project.name}")
+
         except Exception as e:
             data_card.unlock()
             settings_card.unlock()

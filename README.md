@@ -7,10 +7,6 @@ description: >-
 
 ## Introduction
 
-We recommend to use import template for creating custom import applications using class `sly.app.Import` from Supervisely SDK. It is the easiest way to create import app with GUI. You can find more information about import template in our [guide](link to dev portal).
-
-However, if your use case is not covered by our import template, you can create your own app **from scratch**  without the template using basic methods and [widgets](https://developer.supervisely.com/app-development/widgets) from Supervisely SDK.
-
 In this tutorial, we will create a simple import app with GUI that will import images from a folder to Supervisely with a following structure:
 
 ```text
@@ -22,7 +18,9 @@ In this tutorial, we will create a simple import app with GUI that will import i
 
 You can find the above demo files in the data directory of the template-import-app repo - [here](https://github.com/supervisely-ecosystem/import-app-from-scratch/blob/master/data/)
 
-We will go through the following steps:
+<img src="https://github.com/supervisely-ecosystem/import-app-from-scratch/assets/48913536/8df75279-708d-44fa-976d-2948dbd98333">
+
+**We will go through the following steps:**
 
 [**Step 1.**](#step-1-how-to-debug-import-app) How to debug import app.
 
@@ -34,41 +32,11 @@ We will go through the following steps:
 
 Everything you need to reproduce [this tutorial is on GitHub](https://github.com/supervisely-ecosystem/template-import-app): [source code](https://github.com/supervisely-ecosystem/template-import-app/blob/master/src/import-from-scratch.py).
 
-## Set up an environment for the development
-
-Before we begin, please clone the project and set up the working environment
-
-We advise reading our [from script to supervisely app](../basics/from-script-to-supervisely-app.md) guide if you are unfamiliar with the [file structure](../basics/from-script-to-supervisely-app.md#repository-structure) of a Supervisely app repository because it addresses the majority of the potential questions.
-
-**Step 1.** Prepare `~/supervisely.env` file with credentials. [Learn more here.](../../getting-started/basics-of-authentication.md#how-to-use-in-python)
-
-**Step 2.** Fork and clone the [repository](https://github.com/supervisely-ecosystem/import-app-from-scratch) with source code and create [Virtual Environment](https://docs.python.org/3/library/venv.html).
-
-```bash
-git clone https://github.com/supervisely-ecosystem/import-app-from-scratch
-cd import-app-from-scratch
-./create_venv.sh
-```
-
-**Step 3.** Open the repository directory in Visual Studio Code.
-
-```bash
-code -r .
-```
-
-**Step 4.** Activate created virtual environment and use it as Python interpreter.
-
-```bash
-source .venv/bin/activate
-```
+Before we begin, please clone the project and set up the working environment - [here is a link with a description of the steps](/README.md#set-up-an-environment-for-development).
 
 ## Step 1. How to debug import app
 
-Open `local.env` and set up environment variables by inserting your values here for debugging. Learn more about environment variables in our [guide](https://developer.supervisely.com/getting-started/environment-variables)
-
-![launch.json](Run and Debug: select debug option)
-
-For this example, we will use the following environment variables:
+Open `local.env` and `advanced.env` and set up environment variables by inserting your values here for debugging. Learn more about environment variables in our [guide](https://developer.supervisely.com/getting-started/environment-variables)
 
 **local.env:**
 
@@ -81,15 +49,27 @@ FOLDER="data/my_folder"      # ⬅️ path to directory with data on local machi
 **advanced.env:**
 
 ```python
-TASK_ID=35038                # ⬅️ requires to use advanced debugging
+TASK_ID=35555                # ⬅️ requires to use advanced debugging
 TEAM_ID=8                    # ⬅️ change it to your team ID
 WORKSPACE_ID=349             # ⬅️ change it to your workspace ID
 SLY_APP_DATA_DIR="results/"  # ⬅️ path to directory where selected data will be downloaded
 ```
 
+In order to get `TASK_ID` you need to run [`While True Script`](https://ecosystem.supervisely.com/apps/while-true-script) app on the agent specifed in `supervisely.env`
+
+![copy-task-id](https://github.com/supervisely-ecosystem/import-app-from-scratch/assets/48913536/29e4fd16-cb66-4a8a-9c99-5c253ed8c3ba)
+
+Please note that the path you specify in the `SLY_APP_DATA_DIR` variable will be used for saving application results and temporary files (temporary files will be removed at the end).
+
+For example:
+- path on your local computer could be `/Users/admin/Downloads/`
+- path in the current project folder on your local computer could be `results/`
+
+> Don't forget to add this path to `.gitignore` to exclude it from the list of files tracked by Git.
+
 ## Step 2. How to write import script
 
-Find source code for this example [here](https://github.com/supervisely-ecosystem/template-import-app/blob/master/src/import-from-scratch.py)
+Find source code for this example [here](https://github.com/supervisely-ecosystem/import-app-from-scratch/blob/master/src/main.py)
 
 **Step 1. Import libraries**
 
@@ -343,6 +323,10 @@ We will get state of all widgets and call `process_import` function (See **Step 
             )
 
             output_progress.hide()
+            
+            # update project info for thumbnail preview
+            project = api.project.get_info_by_id(project.id)
+
             output_project_thumbnail.set(info=project)
             output_project_thumbnail.show()
             output_text.set(text="Import is finished", status="success")
@@ -362,7 +346,7 @@ We will get state of all widgets and call `process_import` function (See **Step 
 
 Advanced debug is for final app testing. In this case, import app will run with convenient GUI where you can choose which folder from Team Files do you want to import and select destination Team and Workspace where new project will be created.
 
-![Advanced debug](gif GUI import app)
+![Advanced debug](https://github.com/supervisely-ecosystem/import-app-from-scratch/assets/48913536/0ddaec76-fd50-42db-b952-a808d6283b7b)
 
 ## Step 4. How to run it in Supervisely
 
