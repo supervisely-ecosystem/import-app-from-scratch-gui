@@ -16,9 +16,9 @@ In this tutorial, we will create a simple import app with GUI that will import i
 ┗ 🖼️cat_3.jpg
 ```
 
-You can find the above demo files in the data directory of the template-import-app repo - [here](https://github.com/supervisely-ecosystem/import-app-from-scratch/blob/master/data/)
+You can find the above demo files in the data directory of the template-import-app repo - [here](https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/blob/master/data/)
 
-<img src="https://github.com/supervisely-ecosystem/import-app-from-scratch/assets/48913536/8df75279-708d-44fa-976d-2948dbd98333">
+<img src="https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/8df75279-708d-44fa-976d-2948dbd98333">
 
 **We will go through the following steps:**
 
@@ -30,7 +30,7 @@ You can find the above demo files in the data directory of the template-import-a
 
 [**Step 4.**](#step-4-how-to-run-it-in-supervisely) How to run it in Supervisely.
 
-Everything you need to reproduce [this tutorial is on GitHub](https://github.com/supervisely-ecosystem/template-import-app): [source code](https://github.com/supervisely-ecosystem/template-import-app/blob/master/src/import-from-scratch.py).
+Everything you need to reproduce [this tutorial is on GitHub](https://github.com/supervisely-ecosystem/import-from-scratch-gui): [source code](https://github.com/supervisely-ecosystem/import-from-scratch-gui/blob/master/src/main.py).
 
 Before we begin, please clone the project and set up the working environment - [here is a link with a description of the steps](/README.md#set-up-an-environment-for-development).
 
@@ -49,27 +49,22 @@ FOLDER="data/my_folder"      # ⬅️ path to directory with data on local machi
 **advanced.env:**
 
 ```python
-TASK_ID=35555                # ⬅️ requires to use advanced debugging
 TEAM_ID=8                    # ⬅️ change it to your team ID
 WORKSPACE_ID=349             # ⬅️ change it to your workspace ID
 SLY_APP_DATA_DIR="results/"  # ⬅️ path to directory where selected data will be downloaded
 ```
 
-In order to get `TASK_ID` you need to run [`While True Script`](https://ecosystem.supervisely.com/apps/while-true-script) app on the agent specifed in `supervisely.env`
-
-![copy-task-id](https://github.com/supervisely-ecosystem/import-app-from-scratch/assets/48913536/29e4fd16-cb66-4a8a-9c99-5c253ed8c3ba)
-
-Please note that the path you specify in the `SLY_APP_DATA_DIR` variable will be used for saving application results and temporary files (temporary files will be removed at the end).
+Please note that the path you specify in the `SLY_APP_DATA_DIR` variable will be used for saving application results and temporary files.
 
 For example:
-- path on your local computer could be `/Users/admin/Downloads/`
+- path on your local computer could be `/Users/admin/projects/import-app-from-scratch/results/`
 - path in the current project folder on your local computer could be `results/`
 
 > Don't forget to add this path to `.gitignore` to exclude it from the list of files tracked by Git.
 
 ## Step 2. How to write import script
 
-Find source code for this example [here](https://github.com/supervisely-ecosystem/import-app-from-scratch/blob/master/src/main.py)
+Find source code for this example [here](https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/blob/master/src/main.py)
 
 **Step 1. Import libraries**
 
@@ -95,9 +90,6 @@ from supervisely.app.widgets import (
     TeamFilesSelector,
     Text,
 )
-
-# progress for local debugging
-from tqdm import tqdm
 ```
 
 **Step 2. Load environment variables**
@@ -108,7 +100,6 @@ Load ENV variables for debug, has no effect in production.
 IS_PRODUCTION = sly.is_production()
 if IS_PRODUCTION is True:
     load_dotenv("advanced.env")
-    TASK_ID = sly.env.task_id()
     STORAGE_DIR = sly.app.get_data_dir()
 else:
     load_dotenv("local.env")
@@ -129,67 +120,9 @@ Create API object to communicate with Supervisely Server. Loads from `supervisel
 api = sly.Api.from_env()
 ```
 
-**Step 4. Write code for local debugging**
+**Step 4. Make GUI with widgets**
 
-1. Check if we are in debug mode (`IS_PRODUCTION = False`) and create `app` object.
-2. Create project and dataset.
-3. Check that `PATH_TO_FOLDER` is not empty.
-4. Create `progress` object for tqdm.
-5. Call `process_import` function (See **Step 8** below).
-6. Print result project.
-
-```python
-if IS_PRODUCTION is False:
-    app = sly.Application()
-    project = api.project.create(
-        workspace_id=WORKSPACE_ID,
-        name="My Project",
-        change_name_if_conflict=True
-    )
-    dataset = api.dataset.create(
-        project_id=project.id,
-        name="ds0",
-        change_name_if_conflict=True
-    )
-    if PATH_TO_FOLDER is None:
-        raise ValueError("Please, specify path to folder in local.env file")
-
-    progress = tqdm
-    process_import(PATH_TO_FOLDER, dataset.id, progress) # see step 5
-    sly.logger.info(f"Result project: id={project.id}, name={project.name}")
-```
-
-**Step 5. Write a function to process folder with data**
-
-Process images and upload them by paths to dataset on Supervisely server
-
-```python
-def process_import(local_data_dir, dataset_id, progress):
-    images_names = []
-    images_paths = []
-    for file in os.listdir(local_data_dir):
-        file_path = os.path.join(local_data_dir, file)
-        images_names.append(file)
-        images_paths.append(file_path)
-
-    with progress(total=len(images_paths)) as pbar:
-        for img_name, img_path in zip(images_names, images_paths):
-            try:
-                # upload image into dataset on Supervisely server
-                info = api.image.upload_path(dataset_id=dataset_id, name=img_name, path=img_path)
-                sly.logger.trace(f"Image has been uploaded: id={info.id}, name={info.name}")
-            except Exception as e:
-                sly.logger.warn("Skip image", extra={"name": img_name, "reason": repr(e)})
-            finally:
-                # update progress bar
-                pbar.update(1)
-
-```
-
-
-**Step 6. Create GUI app**
-
-When you finish writing and testing code for local debug, you can create GUI for your app. We will build GUI for our import app using [Supervisely widgets](https://developer.supervisely.com/app-development/widgets).
+We will build GUI for our import app using [Supervisely widgets](https://developer.supervisely.com/app-development/widgets).
 
 We will breakdown our GUI into 4 steps:
 
@@ -200,7 +133,7 @@ We will breakdown our GUI into 4 steps:
 
 Let's take a closer look at each step:
 
-1. Create FileSelector widget to select folder with data and place it into Card widget.
+1. Create FileSelector widget to select folder with data and place it into Card widget with validation.
 2. Create Checkbox widget to select if we want to remove source files after successful import and place it into Card widget.
 3. Create workspace selector and input widget to enter project name. Combine those widgets into Container widget and place it into Card widget. Using workspace selector we can select team and workspace where we want to create project in which data will be imported.
 4. Create Button widget to start import process.
@@ -212,9 +145,9 @@ Let's take a closer look at each step:
 10. Initialize app object with layout as a parameter.
 
 ```python
-else: # or if IS_PRODUCTION is True:
-    # Create GUI
-    # Step 1: Import Data
+# Create GUI
+# Step 1: Import Data
+if IS_PRODUCTION is True:
     tf_selector = TeamFilesSelector(
         team_id=TEAM_ID, multiple_selection=False, max_height=300, selection_file_type="folder"
     )
@@ -223,122 +156,130 @@ else: # or if IS_PRODUCTION is True:
         description="Check folder or file in File Browser to import it",
         content=tf_selector,
     )
-
-    # Step 2: Settings
-    remove_source_files = Checkbox("Remove source files after successful import", checked=True)
-    settings_card = Card(
-        title="Settings", description="Select import settings", content=remove_source_files
+else:
+    data_text = Text()
+    if PATH_TO_FOLDER is None:
+        data_text.set("Please, specify path to folder with data in local.env file.", "error")
+    else:
+        if os.path.isdir(PATH_TO_FOLDER):
+            data_text.set(f"Folder with data: '{PATH_TO_FOLDER}'", "success")
+        else:
+            data_text.set(f"Folder with data: '{PATH_TO_FOLDER}' not found", "error")
+    data_card = Card(
+        title="Local Data", description="App was launched in development mode.", content=data_text
     )
 
-    # Step 3: Create Project
-    ws_selector = SelectWorkspace(default_id=WORKSPACE_ID, team_id=TEAM_ID)
-    output_project_name = Input(value="My Project")
-    project_creator = Container(widgets=[ws_selector, output_project_name])
-    project_card = Card(
-        title="Create Project",
-        description="Select destination team, workspace and enter project name",
-        content=project_creator,
-    )
+# Step 2: Settings
+remove_source_files = Checkbox("Remove source files after successful import", checked=True)
+settings_card = Card(
+    title="Settings", description="Select import settings", content=remove_source_files
+)
 
-    # Step 4: Output
-    start_import_btn = Button(text="Start Import")
-    output_text = Text()
-    output_text.hide()
-    output_progress = SlyTqdm()
-    output_progress.hide()
-    output_project_thumbnail = ProjectThumbnail()
-    output_project_thumbnail.hide()
-    output_container = Container(
-        widgets=[output_project_thumbnail, output_text, output_progress, start_import_btn]
-    )
-    output_card = Card(
-        title="Output", description="Press button to start import", content=output_container
-    )
-
-    # Create app object
-    layout = Container(widgets=[data_card, settings_card, project_card, output_card])
-    app = sly.Application(layout=layout)
-
-    @start_import_btn.click
-    def start_import():
-        ...
+# Step 3: Create Project
+ws_selector = SelectWorkspace(default_id=WORKSPACE_ID, team_id=TEAM_ID)
+output_project_name = Input(value="My Project")
+project_creator = Container(widgets=[ws_selector, output_project_name])
+project_card = Card(
+    title="Create Project",
+    description="Select destination team, workspace and enter project name",
+    content=project_creator,
+)
+# Step 4: Output
+start_import_btn = Button(text="Start Import")
+output_project_thumbnail = ProjectThumbnail()
+output_project_thumbnail.hide()
+output_text = Text()
+output_text.hide()
+output_progress = SlyTqdm()
+output_progress.hide()
+output_container = Container(
+    widgets=[output_project_thumbnail, output_text, output_progress, start_import_btn]
+)
+output_card = Card(
+    title="Output", description="Press button to start import", content=output_container
+)
+# create app object
+layout = Container(widgets=[data_card, settings_card, project_card, output_card])
+app = sly.Application(layout=layout)
 ```
 
-**Step 7. Add button click handler to start import process**
+**Step 5. Add button click handler to start import process**
 
 In this step we will create button click handler.
-We will get state of all widgets and call `process_import` function (See **Step 5** above) to import data.
+We will get state of all widgets and import data to new project.
 
 ```python
-    @start_import_btn.click
-    def start_import():
-        try:
-            data_card.lock()
-            settings_card.lock()
-            project_card.lock()
-
-            output_text.hide()
-            project_name = output_project_name.get_value()
-            if project_name is None or project_name == "":
-                output_text.set(text="Please, enter project name", status="error")
-                output_text.show()
-                return
-
-            # download folder from Supervisely Team Files to local storage if debugging in production mode
-            PATH_TO_FOLDER = tf_selector.get_selected_paths()
-            if len(PATH_TO_FOLDER) > 0:
-                PATH_TO_FOLDER = PATH_TO_FOLDER[0]
-                # specify local path to download
-                local_data_path = os.path.join(
-                    STORAGE_DIR, os.path.basename(PATH_TO_FOLDER).lstrip("/")
-                )
-                # download file from Supervisely Team Files to local storage
-                api.file.download_directory(
-                    team_id=TEAM_ID, remote_path=PATH_TO_FOLDER, local_save_path=local_data_path
-                )
-            else:
-                output_text.set(
-                    text="Please, specify path to folder in Supervisely Team Files", status="error"
-                )
-                output_text.show()
-                return
-
-            project = api.project.create(
-                workspace_id=WORKSPACE_ID, name=project_name, change_name_if_conflict=True
-            )
-            dataset = api.dataset.create(
-                project_id=project.id, name="ds0", change_name_if_conflict=True
-            )
-
-            output_progress.show()
-            process_import(local_data_path, dataset.id, output_progress)
-
-            # remove source files from Supervisely Team Files if checked
-            if remove_source_files.is_checked():
-                api.file.remove_dir(TEAM_ID, PATH_TO_FOLDER)
-
-            # set output project after successful import
-            api.task.set_output_project(
-                task_id=TASK_ID, project_id=project.id, project_name=project.name
-            )
-
-            output_progress.hide()
-            
-            # update project info for thumbnail preview
-            project = api.project.get_info_by_id(project.id)
-
-            output_project_thumbnail.set(info=project)
-            output_project_thumbnail.show()
-            output_text.set(text="Import is finished", status="success")
+@start_import_btn.click
+def start_import():
+    try:
+        data_card.lock()
+        settings_card.lock()
+        project_card.lock()
+        output_text.hide()
+        project_name = output_project_name.get_value()
+        if project_name is None or project_name == "":
+            output_text.set(text="Please, enter project name", status="error")
             output_text.show()
-            start_import_btn.disable()
+            return
 
-            sly.logger.info(f"Result project: id={project.id}, name={project.name}")
-        except Exception as e:
-            data_card.unlock()
-            settings_card.unlock()
-            project_card.unlock()
-            raise DialogWindowError(title="Import error", description=f"Error: {e}")
+        # download folder from Supervisely Team Files to local storage if debugging in production mode
+        PATH_TO_FOLDER = tf_selector.get_selected_paths()
+        if len(PATH_TO_FOLDER) > 0:
+            PATH_TO_FOLDER = PATH_TO_FOLDER[0]
+            # specify local path to download
+            local_data_path = os.path.join(
+                STORAGE_DIR, os.path.basename(PATH_TO_FOLDER).lstrip("/")
+            )
+            # download file from Supervisely Team Files to local storage
+            api.file.download_directory(
+                team_id=TEAM_ID, remote_path=PATH_TO_FOLDER, local_save_path=local_data_path
+            )
+        else:
+            output_text.set(
+                text="Please, specify path to folder in Supervisely Team Files", status="error"
+            )
+            output_text.show()
+            return
+        project = api.project.create(WORKSPACE_ID, project_name, change_name_if_conflict=True)
+        dataset = api.dataset.create(project.id, "ds0", change_name_if_conflict=True)
+        output_progress.show()
+        images_names = []
+        images_paths = []
+        for file in os.listdir(local_data_path):
+            file_path = os.path.join(local_data_path, file)
+            images_names.append(file)
+            images_paths.append(file_path)
+
+        with output_progress(total=len(images_paths)) as pbar:
+            for img_name, img_path in zip(images_names, images_paths):
+                try:
+                    # upload image into dataset on Supervisely server
+                    info = api.image.upload_path(dataset_id=dataset.id, name=img_name, path=img_path)
+                    sly.logger.trace(f"Image has been uploaded: id={info.id}, name={info.name}")
+                except Exception as e:
+                    sly.logger.warn("Skip image", extra={"name": img_name, "reason": repr(e)})
+                finally:
+                    # update progress bar
+                    pbar.update(1)
+        # remove source files from Supervisely Team Files if checked
+        if remove_source_files.is_checked():
+            api.file.remove_dir(TEAM_ID, PATH_TO_FOLDER)
+        # hide progress bar after import
+        output_progress.hide()
+        
+        # update project info for thumbnail preview
+        project = api.project.get_info_by_id(project.id)
+        output_project_thumbnail.set(info=project)
+        output_project_thumbnail.show()
+        output_text.set(text="Import is finished", status="success")
+        output_text.show()
+        start_import_btn.disable()
+        sly.logger.info(f"Result project: id={project.id}, name={project.name}")
+    except Exception as e:
+        data_card.unlock()
+        settings_card.unlock()
+        project_card.unlock()
+        raise DialogWindowError(title="Import error", description=f"Error: {e}")
 
 ```
 
@@ -346,10 +287,4 @@ We will get state of all widgets and call `process_import` function (See **Step 
 
 Advanced debug is for final app testing. In this case, import app will run with convenient GUI where you can choose which folder from Team Files do you want to import and select destination Team and Workspace where new project will be created.
 
-![Advanced debug](https://github.com/supervisely-ecosystem/import-app-from-scratch/assets/48913536/0ddaec76-fd50-42db-b952-a808d6283b7b)
-
-## Step 4. How to run it in Supervisely
-
-Submitting an app to the Supervisely Ecosystem isn’t as simple as pushing code to github repository, but it’s not as complicated as you may think of it either.
-
-Please follow this [link](https://developer.supervisely.com/app-development/basics/add-private-app) for instructions on adding your app. We have produced a step-by-step guide on how to add your application to the Supervisely Ecosystem.
+![Advanced debug](https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/0ddaec76-fd50-42db-b952-a808d6283b7b)
