@@ -43,7 +43,7 @@ if IS_PRODUCTION is True:
     )
     data_card = Card(
         title="Select Data",
-        description="Check folder or file in File Browser to import it",
+        description="Check folder in File Browser to import it",
         content=tf_selector,
     )
 else:

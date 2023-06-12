@@ -1,6 +1,6 @@
 ---
 description: >-
-  A step-by-step tutorial of how to create custom import Supervisely app from scratch.
+  A step-by-step tutorial of how to create custom import Supervisely app from scratch with GUI.
 ---
 
 # Create import Supervisely app with GUI from scratch
@@ -18,7 +18,7 @@ In this tutorial, we will create a simple import app with GUI that will import i
 
 You can find the above demo files in the data directory of the template-import-app repo - [here](https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/blob/master/data/)
 
-<img src="https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/8df75279-708d-44fa-976d-2948dbd98333">
+<img src="https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/f3fe1dd0-c357-42d0-9122-4591bf91ddcd">
 
 **We will go through the following steps:**
 
@@ -61,6 +61,10 @@ For example:
 - path in the current project folder on your local computer could be `results/`
 
 > Don't forget to add this path to `.gitignore` to exclude it from the list of files tracked by Git.
+
+To switch between local and advanced debug modes, select appropriate debug configuration in **`Run & Debug`** menu in VS Code
+
+<img src="https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/4b37f3a4-d1b0-4c23-8f5d-761bcd601d20">
 
 ## Step 2. How to write import script
 
@@ -153,7 +157,7 @@ if IS_PRODUCTION is True:
     )
     data_card = Card(
         title="Select Data",
-        description="Check folder or file in File Browser to import it",
+        description="Check folder in File Browser to import it",
         content=tf_selector,
     )
 else:
@@ -283,8 +287,12 @@ def start_import():
 
 ```
 
+**App screenshot**
+
+<img src="https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/567a34e7-3885-4c70-9b81-68aab54abadc">
+
 ## Step 3. Advanced debug
 
-Advanced debug is for final app testing. In this case, import app will run with convenient GUI where you can choose which folder from Team Files do you want to import and select destination Team and Workspace where new project will be created.
+Advanced debug is for final app testing. In this case, import app will download selected folder with data from Supervisely server and upload images to new project with selected name. You can use this mode to test your app before [publishing it to the Ecosystem](https://developer.supervisely.com/getting-started/cli#release-your-private-apps-using-cli).
 
-![Advanced debug](https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/0ddaec76-fd50-42db-b952-a808d6283b7b)
+![Advanced debug](https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/d1794539-dff7-4c2e-959c-8a7a8db1a87c)
