@@ -60,9 +60,11 @@ For example:
 - path on your local computer could be `/Users/admin/projects/import-app-from-scratch/results/`
 - path in the current project folder on your local computer could be `results/`
 
+Also note that all paths on Supervisely server are absolute and start from '/' symbol, so you need to specify the full path to the folder, for example `/data/my_folder/`
+
 > Don't forget to add this path to `.gitignore` to exclude it from the list of files tracked by Git.
 
-To switch between local and advanced debug modes, select appropriate debug configuration in **`Run & Debug`** menu in VS Code
+To switch between local and advanced debug modes, select corresponding debug configuration in **`Run & Debug`** menu in VS Code
 
 <img src="https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/4b37f3a4-d1b0-4c23-8f5d-761bcd601d20">
 
