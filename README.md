@@ -33,11 +33,11 @@ You can find the above demo files in the data directory of the template-import-a
 
 Everything you need to reproduce this tutorial is on [GitHub](https://github.com/supervisely-ecosystem/import-from-scratch-gui): [main.py](https://github.com/supervisely-ecosystem/import-from-scratch-gui/blob/master/src/main.py).
 
-Before we begin, please clone the project and set up the working environment - [here is a link with a description of the steps](./overview.md#set-up-an-environment-for-the-development).
+Before we begin, please clone the project and set up the working environment - [here is a link with a description of the steps](https://developer.supervisely.com/app-development/create-import-app/overview#set-up-an-environment-for-the-development).
 
 ## Step 1. How to debug import app
 
-Open `local.env` and set up environment variables by inserting your values here for debugging. Learn more about environment variables in our [guide](../../getting-started/environment-variables.md)
+Open `local.env` and set up environment variables by inserting your values here for debugging. Learn more about environment variables in our [guide](https://developer.supervisely.com/getting-started/environment-variables)
 
 **local.env:**
 
@@ -280,7 +280,7 @@ To switch between local and advanced debug modes, select corresponding debug con
 
 <img src="https://github.com/supervisely-ecosystem/import-app-from-scratch-gui/assets/48913536/4b37f3a4-d1b0-4c23-8f5d-761bcd601d20">
 
-Open `advanced.env` and set up [environment variables](../../getting-started/environment-variables.md) by inserting your values here for debugging.
+Open `advanced.env` and set up [environment variables](https://developer.supervisely.com/getting-started/environment-variables) by inserting your values here for debugging.
 
 **advanced.env:**
 
