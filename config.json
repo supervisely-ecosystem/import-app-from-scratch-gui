@@ -2,6 +2,7 @@
   "name": "Custom Import App (without template)",
   "description": "Demonstrates how to make custom import supervisely app that imports data from folder",
   "type": "app",
+  "instance_version": "6.15.60",
   "version": "2.0.0",
   "categories": ["import", "images"],
   "docker_image": "supervisely/base-py-sdk:6.73.564",
